@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-sidecar
+  name: multi-sidecar
+spec:
+  containers:
+  - image: nginx:alpine
+    name: frontend
+    resources: {}
+    volumeMounts:
+    - name: local
+      mountPath: /usr/share/nginx
+  - image: k8s.gcr.io/git-sync:v3.1.6
+    name: sidecar
+    env:
+    - name: GIT_SYNC_REPO
+      value: https://github.com/kodestacked/k8s-sidecar-pattern.git
+    - name: GIT_SYNC_BRANCH
+      value: main
+    - name: GIT_SYNC_DEPTH
+      value: "1"
+    - name: GIT_SYNC_DEST
+      value: "html"
+    - name: GIT_SYNC_ONE_TIME
+      value: "false"
+    volumeMounts:
+    - name: local
+      mountPath: /tmp/git
+  volumes:
+  - name: local
+    emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-sidecar-service
+spec:
+  type: NodePort
+  selector:
+    run: multi-sidecar
+  ports: 
+    - port: 80
+      targetPort: 80
+      nodePort: 30007

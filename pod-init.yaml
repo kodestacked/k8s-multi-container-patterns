@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: web
+  name: web
+spec:
+  containers:
+  - image: nginx:alpine
+    name: web
+    resources: {}
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: local
+      mountPath: /usr/share/nginx/html
+  initContainers:
+  - image: busybox
+    name: busybox
+    command: ["./bin/sh","-c","wget -O /work-dir/config.properties https://api.github.com/users/sample"]
+    volumeMounts:
+    - name: local
+      mountPath: /work-dir
+  volumes:
+  - name: local
+    emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

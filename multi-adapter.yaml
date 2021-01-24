@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-adapter
+  name: multi-adapter
+spec:
+  containers:
+  - image: nginx:alpine
+    name: backend
+    resources: {}
+    volumeMounts:
+    - name: nginx-config
+      mountPath: etc/nginx/conf.d
+      readOnly: true
+  - image: nginx/nginx-prometheus-exporter
+    name: adapter
+    args: ["-nginx.scrape-uri","http://127.0.0.1:80/nginx_status"]
+  volumes:
+  - name: nginx-config
+    configMap:
+      name: nginx-config
+      items:
+      - key: default.conf
+        path: default.conf
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
